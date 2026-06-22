@@ -1,0 +1,245 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+.wrap{padding:1rem 0;font-family:var(--font-sans);}
+.top-bar{display:flex;align-items:center;gap:10px;margin-bottom:1.25rem;flex-wrap:wrap;}
+.top-bar h2{font-size:18px;font-weight:500;color:var(--color-text-primary);}
+.nav-btn{background:transparent;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);padding:5px 12px;cursor:pointer;font-size:13px;color:var(--color-text-primary);}
+.nav-btn:hover{background:var(--color-background-secondary);}
+.month-label{font-size:15px;font-weight:500;color:var(--color-text-primary);min-width:80px;text-align:center;}
+.status-bar{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--color-text-secondary);margin-bottom:10px;min-height:22px;}
+.dot{width:7px;height:7px;border-radius:50%;display:inline-block;background:var(--color-border-secondary);}
+.dot.ok{background:#639922;} .dot.err{background:#E24B4A;} .dot.loading{background:#EF9F27;animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+.save-btn{border:0.5px solid #B5D4F4;border-radius:var(--border-radius-md);padding:5px 14px;cursor:pointer;font-size:12px;background:#E6F1FB;color:#185FA5;margin-left:auto;}
+.save-btn:hover{background:#B5D4F4;} .save-btn:disabled{opacity:0.5;cursor:not-allowed;}
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:1.25rem;}
+.stat-card{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px 14px;}
+.stat-label{font-size:11px;color:var(--color-text-secondary);margin-bottom:5px;}
+.stat-val{font-size:20px;font-weight:500;color:var(--color-text-primary);}
+.stat-val.blue{color:#185FA5;}
+.stat-unit{font-size:11px;color:var(--color-text-secondary);margin-left:2px;}
+.tabs{display:flex;border-bottom:0.5px solid var(--color-border-tertiary);margin-bottom:1.25rem;}
+.tab{padding:7px 18px;font-size:13px;cursor:pointer;color:var(--color-text-secondary);border-bottom:2px solid transparent;margin-bottom:-0.5px;background:transparent;border-top:none;border-left:none;border-right:none;}
+.tab.active{color:#185FA5;border-bottom:2px solid #185FA5;font-weight:500;}
+.section-box{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem 1.25rem;margin-bottom:1.25rem;}
+.section-ttl{font-size:13px;font-weight:500;color:var(--color-text-secondary);margin-bottom:10px;}
+.add-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.txt-input{border:0.5px solid var(--color-border-secondary);border-radius:6px;padding:5px 9px;font-size:13px;background:var(--color-background-primary);color:var(--color-text-primary);}
+.txt-input:focus{outline:none;border-color:#378ADD;}
+.sm-btn{border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);padding:5px 12px;cursor:pointer;font-size:12px;background:transparent;color:var(--color-text-primary);}
+.sm-btn:hover{background:var(--color-background-secondary);}
+.chip-list{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+.chip{display:flex;align-items:center;gap:4px;background:var(--color-background-secondary);border-radius:20px;padding:3px 10px;font-size:12px;color:var(--color-text-primary);border:0.5px solid var(--color-border-tertiary);}
+.chip-del{background:none;border:none;cursor:pointer;color:var(--color-text-secondary);font-size:13px;padding:0 0 0 2px;}
+.chip-del:hover{color:#E24B4A;}
+.empty-msg{font-size:13px;color:var(--color-text-secondary);padding:4px 0;}
+
+.table-outer{overflow-x:auto;max-height:480px;overflow-y:auto;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);}
+table{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed;}
+thead th{background:var(--color-background-secondary);color:var(--color-text-secondary);font-weight:500;padding:8px 8px;text-align:center;border-bottom:0.5px solid var(--color-border-secondary);white-space:nowrap;position:sticky;top:0;z-index:2;}
+thead th.left{text-align:left;}
+tfoot td{background:var(--color-background-secondary);font-weight:500;padding:7px 8px;text-align:center;border-top:0.5px solid var(--color-border-secondary);position:sticky;bottom:0;z-index:2;}
+tfoot td.left{text-align:left;}
+td{padding:6px 8px;border-bottom:0.5px solid var(--color-border-tertiary);color:var(--color-text-primary);text-align:center;vertical-align:middle;}
+td.left{text-align:left;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:var(--color-background-secondary);}
+.num-input{width:56px;border:0.5px solid var(--color-border-secondary);border-radius:6px;padding:4px 6px;font-size:12px;color:var(--color-text-primary);background:var(--color-background-primary);text-align:right;}
+.num-input:focus{outline:none;border-color:#378ADD;}
+.badge-sun{background:#FAECE7;color:#993C1D;font-size:11px;padding:1px 6px;border-radius:10px;}
+.badge-sat{background:#E6F1FB;color:#185FA5;font-size:11px;padding:1px 6px;border-radius:10px;}
+.row-total{font-weight:500;color:#185FA5;}
+</style>
+
+<div class="wrap">
+  <div class="top-bar">
+    <h2>식수 관리</h2>
+    <button class="nav-btn" onclick="changeMonth(-1)">‹ 이전</button>
+    <span class="month-label" id="monthLabel"></span>
+    <button class="nav-btn" onclick="changeMonth(1)">다음 ›</button>
+  </div>
+
+  <div class="status-bar">
+    <span class="dot" id="statusDot"></span>
+    <span id="statusMsg">연결 확인 중...</span>
+    <button class="save-btn" id="saveBtn" onclick="saveAll()">
+      <i class="ti ti-device-floppy" aria-hidden="true"></i> 저장
+    </button>
+  </div>
+
+  <div class="summary-grid" id="summaryGrid"></div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('input',this)">일별 입력</button>
+    <button class="tab" onclick="switchTab('client',this)">거래처 관리</button>
+  </div>
+
+  <div id="tabInput">
+    <div class="table-outer">
+      <table>
+        <thead id="mainHead"></thead>
+        <tbody id="mainBody"></tbody>
+        <tfoot id="mainFoot"></tfoot>
+      </table>
+    </div>
+  </div>
+
+  <div id="tabClient" style="display:none;">
+    <div class="section-box">
+      <div class="section-ttl">거래처 목록</div>
+      <div class="add-row">
+        <input class="txt-input" id="clientName" placeholder="거래처명 입력" style="width:160px;" onkeydown="if(event.key==='Enter')addClient()" />
+        <button class="sm-btn" onclick="addClient()"><i class="ti ti-plus" aria-hidden="true"></i> 추가</button>
+      </div>
+      <div class="chip-list" id="clientChips"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API='https://script.google.com/macros/s/AKfycbxlbL0vz7M-oB8yp-L3A_FAKNmueiIwQjtqvA0Jmj10Zlbev-N2GBzQN27r7x9VLIJunA/exec';
+const DAYS=['일','월','화','수','목','금','토'];
+let year=new Date().getFullYear(), month=new Date().getMonth();
+let posData={}, monData={}, clients=[];
+
+function mk(y,m){return y+'-'+(m+1);}
+function daysIn(y,m){return new Date(y,m+1,0).getDate();}
+
+function setStatus(state,msg){
+  document.getElementById('statusDot').className='dot'+(state==='ok'?' ok':state==='err'?' err':' loading');
+  document.getElementById('statusMsg').textContent=msg;
+}
+
+async function loadFromSheet(){
+  setStatus('loading','데이터 불러오는 중...');
+  try{
+    const res=await fetch(API+'?t='+Date.now());
+    const json=await res.json();
+    parseSheet(json.data||[]);
+    renderAll();
+    setStatus('ok','Google Sheets 연결됨');
+  }catch(e){
+    renderAll();
+    setStatus('err','연결 실패 — 로컬 모드');
+  }
+}
+
+function parseSheet(rows){
+  posData={}; monData={};
+  rows.forEach(r=>{
+    if(!r[0]) return;
+    if(r[3]==='CLIENTS'){try{clients=JSON.parse(r[5])||[];}catch(e){clients=[];} return;}
+    const k=r[0]+'-'+r[1];
+    const d=parseInt(r[2]),type=r[3],ci=r[4],val=parseInt(r[5])||0;
+    if(type==='POS'){if(!posData[k])posData[k]={};posData[k][d]=val;}
+    if(type==='MON'){if(!monData[k])monData[k]={};if(!monData[k][d])monData[k][d]={};monData[k][d][ci]=val;}
+  });
+}
+
+async function saveAll(){
+  const btn=document.getElementById('saveBtn');
+  btn.disabled=true; setStatus('loading','저장 중...');
+  const k=mk(year,month);
+  const rows=[];
+  const pd=posData[k]||{},md=monData[k]||{};
+  const days=daysIn(year,month);
+  for(let d=1;d<=days;d++){
+    if(pd[d]!=null) rows.push({year,month:month+1,day:d,type:'POS',clientIdx:'',value:pd[d]});
+    clients.forEach((c,ci)=>{const v=(md[d]||{})[ci];if(v!=null) rows.push({year,month:month+1,day:d,type:'MON',clientIdx:ci,value:v});});
+  }
+  try{
+    for(const row of rows) await fetch(API,{method:'POST',body:JSON.stringify(row)});
+    await fetch(API,{method:'POST',body:JSON.stringify({year,month:month+1,day:0,type:'CLIENTS',clientIdx:'',value:0,clients})});
+    setStatus('ok','저장 완료 — '+new Date().toLocaleTimeString('ko-KR'));
+  }catch(e){
+    setStatus('err','저장 실패 — 네트워크 확인');
+  }
+  btn.disabled=false;
+}
+
+function getPos(d){return(posData[mk(year,month)]||{})[d]??'';}
+function getMon(d,ci){return((monData[mk(year,month)]||{})[d]||{})[ci]??'';}
+function setPos(d,val){const k=mk(year,month);if(!posData[k])posData[k]={};if(val==='')delete posData[k][d];else posData[k][d]=parseInt(val)||0;recalc();}
+function setMon(d,ci,val){const k=mk(year,month);if(!monData[k])monData[k]={};if(!monData[k][d])monData[k][d]={};if(val==='')delete monData[k][d][ci];else monData[k][d][ci]=parseInt(val)||0;recalc();}
+
+function addClient(){
+  const name=document.getElementById('clientName').value.trim();
+  if(!name||clients.includes(name))return;
+  clients.push(name);
+  document.getElementById('clientName').value='';
+  renderClients(); renderTable(); recalc();
+}
+function delClient(i){clients.splice(i,1);renderClients();renderTable();recalc();}
+function renderClients(){
+  const el=document.getElementById('clientChips');
+  if(clients.length===0){el.innerHTML='<span class="empty-msg">등록된 거래처 없음</span>';return;}
+  el.innerHTML=clients.map((c,i)=>`<span class="chip">${c}<button class="chip-del" onclick="delClient(${i})">×</button></span>`).join('');
+}
+
+function renderTable(){
+  const days=daysIn(year,month);
+  let hCols=`<th class="left" style="width:38px">날짜</th><th style="width:36px">요일</th><th style="width:68px">포스</th>`;
+  clients.forEach(c=>{hCols+=`<th style="min-width:68px">${c}</th>`;});
+  if(clients.length>0) hCols+=`<th style="width:62px">합계</th>`;
+  document.getElementById('mainHead').innerHTML=`<tr>${hCols}</tr>`;
+
+  let rows='';
+  for(let d=1;d<=days;d++){
+    const dow=new Date(year,month,d).getDay();
+    const dayLabel=dow===0?`<span class="badge-sun">${DAYS[dow]}</span>`:dow===6?`<span class="badge-sat">${DAYS[dow]}</span>`:DAYS[dow];
+    let cols=`<td class="left">${d}</td><td>${dayLabel}</td><td><input class="num-input" type="number" min="0" value="${getPos(d)}" onchange="setPos(${d},this.value)"/></td>`;
+    clients.forEach((c,ci)=>{cols+=`<td><input class="num-input" type="number" min="0" value="${getMon(d,ci)}" onchange="setMon(${d},${ci},this.value)"/></td>`;});
+    if(clients.length>0) cols+=`<td class="row-total" id="rt-${d}"></td>`;
+    rows+=`<tr>${cols}</tr>`;
+  }
+  document.getElementById('mainBody').innerHTML=rows;
+
+  let fCols=`<td colspan="2" class="left">합계</td><td id="f-pos">0</td>`;
+  clients.forEach((c,ci)=>{fCols+=`<td id="f-c-${ci}">0</td>`;});
+  if(clients.length>0) fCols+=`<td id="f-total" style="color:#185FA5">0</td>`;
+  document.getElementById('mainFoot').innerHTML=`<tr>${fCols}</tr>`;
+}
+
+function recalc(){
+  const k=mk(year,month),days=daysIn(year,month);
+  const pd=posData[k]||{},md=monData[k]||{};
+  let posTotal=0,cTotals=clients.map(()=>0);
+  for(let d=1;d<=days;d++){
+    const pv=pd[d]||0;posTotal+=pv;let rowSum=pv;
+    clients.forEach((c,ci)=>{const mv=(md[d]||{})[ci]||0;cTotals[ci]+=mv;rowSum+=mv;});
+    const rt=document.getElementById('rt-'+d);if(rt) rt.textContent=clients.length>0?rowSum:'';
+  }
+  const grand=posTotal+cTotals.reduce((a,b)=>a+b,0);
+  const fp=document.getElementById('f-pos');if(fp) fp.textContent=posTotal;
+  clients.forEach((c,ci)=>{const el=document.getElementById('f-c-'+ci);if(el) el.textContent=cTotals[ci];});
+  const ft=document.getElementById('f-total');if(ft) ft.textContent=grand;
+  const monTotal=cTotals.reduce((a,b)=>a+b,0);
+  let cards=`<div class="stat-card"><div class="stat-label">포스 합계</div><div class="stat-val">${posTotal}<span class="stat-unit">식</span></div></div>
+    <div class="stat-card"><div class="stat-label">월식 합계</div><div class="stat-val">${monTotal}<span class="stat-unit">식</span></div></div>`;
+  clients.forEach((c,ci)=>{cards+=`<div class="stat-card"><div class="stat-label">${c}</div><div class="stat-val">${cTotals[ci]}<span class="stat-unit">식</span></div></div>`;});
+  cards+=`<div class="stat-card"><div class="stat-label">총 합계</div><div class="stat-val blue">${grand}<span class="stat-unit">식</span></div></div>`;
+  document.getElementById('summaryGrid').innerHTML=cards;
+}
+
+function renderAll(){
+  document.getElementById('monthLabel').textContent=year+'년 '+(month+1)+'월';
+  renderClients(); renderTable(); recalc();
+}
+
+function switchTab(t,el){
+  document.querySelectorAll('.tab').forEach(e=>e.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tabInput').style.display=t==='input'?'':'none';
+  document.getElementById('tabClient').style.display=t==='client'?'':'none';
+  if(t==='client') renderClients();
+}
+
+function changeMonth(dir){
+  month+=dir;
+  if(month<0){month=11;year--;} if(month>11){month=0;year++;}
+  loadFromSheet();
+}
+
+loadFromSheet();
+</script>
