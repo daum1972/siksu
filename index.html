@@ -46,21 +46,46 @@ body{font-family:'Noto Sans KR',sans-serif;background:#f5f5f5;color:#222;font-si
 .chip-del:hover{color:#E24B4A;}
 .empty-msg{font-size:13px;color:#aaa;padding:4px 0;}
 
-.table-outer{overflow-x:auto;max-height:55vh;overflow-y:auto;border:1px solid #e0e0e0;border-radius:8px;background:#fff;}
-table{border-collapse:collapse;font-size:13px;width:auto;min-width:100%;}
-thead th{background:#f4f6f8;color:#666;font-weight:600;padding:8px 10px;text-align:center;border-bottom:1px solid #ddd;white-space:nowrap;position:sticky;top:0;z-index:2;}
-thead th.left{text-align:left;}
-tfoot td{background:#f4f6f8;font-weight:600;padding:7px 10px;text-align:center;border-top:1px solid #ddd;position:sticky;bottom:0;z-index:2;color:#333;}
-tfoot td.left{text-align:left;}
+.table-outer{overflow:auto;max-height:55vh;border:1px solid #e0e0e0;border-radius:8px;background:#fff;}
+table{border-collapse:collapse;font-size:13px;width:auto;}
+
+/* 헤더 고정 (세로) */
+thead th{background:#f4f6f8;color:#666;font-weight:600;padding:8px 10px;text-align:center;border-bottom:1px solid #ddd;white-space:nowrap;position:sticky;top:0;z-index:3;}
+
+/* 날짜/요일 열 고정 (가로) */
+thead th:nth-child(1),
+thead th:nth-child(2){position:sticky;left:0;z-index:4;background:#f4f6f8;}
+thead th:nth-child(2){left:48px;}
+
+tbody td:nth-child(1),
+tbody td:nth-child(2){position:sticky;background:#fff;z-index:2;}
+tbody td:nth-child(1){left:0;}
+tbody td:nth-child(2){left:48px;}
+tbody tr:hover td:nth-child(1),
+tbody tr:hover td:nth-child(2){background:#fafcff;}
+
+/* 합계 행 고정 (세로 하단) */
+tfoot td{background:#f4f6f8;font-weight:600;padding:7px 10px;text-align:center;border-top:1px solid #ddd;position:sticky;bottom:0;z-index:3;color:#333;}
+tfoot td:nth-child(1),
+tfoot td:nth-child(2){position:sticky;z-index:5;background:#f4f6f8;}
+tfoot td:nth-child(1){left:0;bottom:0;}
+tfoot td:nth-child(2){left:48px;bottom:0;}
+
 tbody td{padding:5px 10px;border-bottom:1px solid #f0f0f0;color:#222;text-align:center;vertical-align:middle;white-space:nowrap;}
 tbody td.left{text-align:left;}
+thead th.left{text-align:left;}
+tfoot td.left{text-align:left;}
 tbody tr:last-child td{border-bottom:none;}
 tbody tr:hover td{background:#fafcff;}
+
 .num-input{width:64px;border:1px solid #ddd;border-radius:5px;padding:3px 6px;font-size:13px;color:#222;background:#fff;text-align:right;}
 .num-input:focus{outline:none;border-color:#378ADD;background:#f0f7ff;}
 .badge-sun{background:#FAECE7;color:#993C1D;font-size:11px;padding:2px 6px;border-radius:8px;}
 .badge-sat{background:#E6F1FB;color:#185FA5;font-size:11px;padding:2px 6px;border-radius:8px;}
 .row-total{font-weight:600;color:#185FA5;}
+
+/* 날짜/요일 열 구분선 */
+tbody td:nth-child(2),thead th:nth-child(2),tfoot td:nth-child(2){border-right:1px solid #ddd;}
 </style>
 </head>
 <body>
@@ -147,6 +172,7 @@ function parseSheet(rows){
   });
 }
 
+// 한 번에 묶어서 전송 — 저장 속도 개선
 async function saveAll(){
   const btn=document.getElementById('saveBtn');
   btn.disabled=true; setStatus('loading','저장 중...');
@@ -162,8 +188,8 @@ async function saveAll(){
     });
   }
   try{
-    for(const row of rows) await fetch(API,{method:'POST',body:JSON.stringify(row)});
-    await fetch(API,{method:'POST',body:JSON.stringify({year,month:month+1,day:0,type:'CLIENTS',clientIdx:'',value:0,clients})});
+    // 한 번의 요청으로 전체 전송
+    await fetch(API,{method:'POST',body:JSON.stringify({batch:true, rows, clients, year, month:month+1})});
     setStatus('ok','저장 완료 — '+new Date().toLocaleTimeString('ko-KR'));
   }catch(e){
     setStatus('err','저장 실패 — 네트워크 확인');
@@ -192,7 +218,7 @@ function renderClients(){
 
 function renderTable(){
   const days=daysIn(year,month);
-  let hCols=`<th class="left" style="width:42px">날짜</th><th style="width:40px">요일</th><th style="width:80px">포스</th>`;
+  let hCols=`<th class="left" style="width:42px">날짜</th><th style="width:44px">요일</th><th style="width:80px">포스</th>`;
   clients.forEach(c=>{hCols+=`<th style="width:80px">${c}</th>`;});
   if(clients.length>0) hCols+=`<th style="width:80px">합계</th>`;
   document.getElementById('mainHead').innerHTML=`<tr>${hCols}</tr>`;
@@ -208,7 +234,7 @@ function renderTable(){
   }
   document.getElementById('mainBody').innerHTML=rows;
 
-  let fCols=`<td colspan="2" class="left">합계</td><td id="f-pos">0</td>`;
+  let fCols=`<td class="left" colspan="2">합계</td><td id="f-pos">0</td>`;
   clients.forEach((c,ci)=>{fCols+=`<td id="f-c-${ci}">0</td>`;});
   if(clients.length>0) fCols+=`<td id="f-total" style="color:#185FA5">0</td>`;
   document.getElementById('mainFoot').innerHTML=`<tr>${fCols}</tr>`;
