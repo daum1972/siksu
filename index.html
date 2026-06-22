@@ -163,8 +163,17 @@ async function loadFromSheet(){
 function parseSheet(rows){
   posData={}; monData={};
   rows.forEach(r=>{
+    if(r[3]==='CLIENTS'){
+      // F열(5)~N열(13) 중 JSON 배열이 있는 열 찾기
+      for(let i=5;i<r.length;i++){
+        if(typeof r[i]==='string' && r[i].startsWith('[')){
+          try{clients=JSON.parse(r[i])||[];}catch(e){clients=[];}
+          break;
+        }
+      }
+      return;
+    }
     if(!r[0]) return;
-    if(r[3]==='CLIENTS'){try{clients=JSON.parse(r[5])||[];}catch(e){clients=[];} return;}
     const k=r[0]+'-'+r[1];
     const d=parseInt(r[2]),type=r[3],ci=r[4],val=parseInt(r[5])||0;
     if(type==='POS'){if(!posData[k])posData[k]={};posData[k][d]=val;}
