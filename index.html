@@ -264,9 +264,20 @@ function recalc(){
   clients.forEach((c,ci)=>{const el=document.getElementById('f-c-'+ci);if(el) el.textContent=cTotals[ci];});
   const ft=document.getElementById('f-total');if(ft) ft.textContent=grand;
   const monTotal=cTotals.reduce((a,b)=>a+b,0);
+  // 당일 합계 계산
+  const today = new Date();
+  let todayTotal = '';
+  if(today.getFullYear()===year && today.getMonth()===month){
+    const td = today.getDate();
+    const tp = (posData[k]||{})[td]||0;
+    const tm = clients.reduce((s,c,ci)=>s+(((monData[k]||{})[td]||{})[ci]||0),0);
+    todayTotal = tp+tm;
+  }
+
   let cards=`<div class="stat-card"><div class="stat-label">포스 합계</div><div class="stat-val">${posTotal}<span class="stat-unit">식</span></div></div>
     <div class="stat-card"><div class="stat-label">월식 합계</div><div class="stat-val">${monTotal}<span class="stat-unit">식</span></div></div>`;
   clients.forEach((c,ci)=>{cards+=`<div class="stat-card"><div class="stat-label">${c}</div><div class="stat-val">${cTotals[ci]}<span class="stat-unit">식</span></div></div>`;});
+  if(todayTotal!=='') cards+=`<div class="stat-card" style="border:1.5px solid #E8A020;"><div class="stat-label">📅 오늘(${today.getDate()}일) 합계</div><div class="stat-val" style="color:#E8A020">${todayTotal}<span class="stat-unit">식</span></div></div>`;
   cards+=`<div class="stat-card"><div class="stat-label">총 합계</div><div class="stat-val blue">${grand}<span class="stat-unit">식</span></div></div>`;
   document.getElementById('summaryGrid').innerHTML=cards;
 }
